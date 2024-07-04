@@ -4,7 +4,7 @@ on:
     branches:
       - stage
       - quality
-      - main
+      - production
 
 jobs:
   get-environment:
@@ -22,6 +22,6 @@ jobs:
             echo "my_env=stage" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/quality" ]]; then
             echo "my_env=quality" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "my_env=main" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+            echo "my_env=production" >> $GITHUB_OUTPUT
           fi
