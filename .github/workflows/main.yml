@@ -1,9 +1,9 @@
 name: Deployment on AWS
+
 on:
   push:
     branches:
-      - stage
-      - quality
+      - dev
       - production
 
 jobs:
@@ -13,15 +13,67 @@ jobs:
       my_env: ${{ steps.setenv.outputs.my_env }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout github code
+      - name: Checkout GitHub code
         id: checkout-id
         uses: actions/checkout@v4
       - id: setenv
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
-            echo "my_env=stage" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/quality" ]]; then
-            echo "my_env=quality" >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "my_env=dev" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
             echo "my_env=production" >> $GITHUB_OUTPUT
           fi
+
+  deploy:
+    needs: get-environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitHub code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables based on branch
+        run: |
+          if [ "${{ needs.get-environment.outputs.my_env }}" == "dev" ]; then
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" >> $GITHUB_ENV
+            echo "STACK_NAME=your-dev-stack-name" >> $GITHUB_ENV
+          elif [ "${{ needs.get-environment.outputs.my_env }}" == "production" ]; then
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_PRODUCTION }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_PRODUCTION }}" >> $GITHUB_ENV
+            echo "STACK_NAME=your-production-stack-name" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
+
+      - name: Get branch name
+        id: branch
+        shell: bash
+        run: echo "name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      - name: Echo branch name
+        run: |
+            echo ${{ steps.branch.outputs.name }}
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Pushing image
+        id: build-image-audit-rules
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: botest-dev-repository
+            IMAGE_TAG: latest
+        run: |
+          echo Build started on `date`
+          echo Building the Docker image...
+          ls          
+        #   docker build -t "$IMAGE_REPO_NAME":"$IMAGE_TAG" .
+        #   docker images 
+        #   docker tag "$IMAGE_REPO_NAME":"$IMAGE_TAG"  "$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com"/"$IMAGE_REPO_NAME:$IMAGE_TAG"  
+
+        #   docker build -f docker/local/audit_rules/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        #   docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        #   echo "image-audit-rules=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
