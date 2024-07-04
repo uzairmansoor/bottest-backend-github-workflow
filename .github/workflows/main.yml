@@ -36,10 +36,12 @@ jobs:
           if [ "${{ needs.get-environment.outputs.my_env }}" == "dev" ]; then
             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" >> $GITHUB_ENV
+            echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID_DEV }}" >> $GITHUB_ENV
             echo "STACK_NAME=your-dev-stack-name" >> $GITHUB_ENV
           elif [ "${{ needs.get-environment.outputs.my_env }}" == "production" ]; then
             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_PRODUCTION }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_PRODUCTION }}" >> $GITHUB_ENV
+            echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID_PRODUCTION }}" >> $GITHUB_ENV
             echo "STACK_NAME=your-production-stack-name" >> $GITHUB_ENV
           fi
 
@@ -70,9 +72,9 @@ jobs:
           echo Build started on `date`
           echo Building the Docker image...
           ls          
-        #   docker build -t "$IMAGE_REPO_NAME":"$IMAGE_TAG" .
-        #   docker images 
-        #   docker tag "$IMAGE_REPO_NAME":"$IMAGE_TAG"  "$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com"/"$IMAGE_REPO_NAME:$IMAGE_TAG"  
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker images 
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG  
 
         #   docker build -f docker/local/audit_rules/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         #   docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
