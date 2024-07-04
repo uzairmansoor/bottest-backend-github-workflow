@@ -1,26 +1,27 @@
 name: Deployment on AWS
 on:
-    push:
-        branches:
-        - stage
-        - quality
-        - main
+  push:
+    branches:
+      - stage
+      - quality
+      - main
+
 jobs:
-    get-environment:
-        name: Get environment
-        outputs:
-            my_env: ${{ steps.setenv.outputs.my_env }}
-        runs-on: ubuntu-latest
+  get-environment:
+    name: Get environment
+    outputs:
+      my_env: ${{ steps.setenv.outputs.my_env }}
+    runs-on: ubuntu-latest
     steps:
-        -   name: Checkout github code
-            id: checkout-id
-            uses: actions/checkout@v4
-        -   id: setenv
-            run: |
-                if [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
-                    echo "my_env=stage" >> $GITHUB_OUTPUT          
-                elif [[ "${{ github.ref }}" == "refs/heads/quality" ]]; then
-                    echo "my_env=quality" >> $GITHUB_OUTPUT
-                elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-                    echo "my_env=main" >> $GITHUB_OUTPUT
-                fi
+      - name: Checkout github code
+        id: checkout-id
+        uses: actions/checkout@v4
+      - id: setenv
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+            echo "my_env=stage" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/quality" ]]; then
+            echo "my_env=quality" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "my_env=main" >> $GITHUB_OUTPUT
+          fi
