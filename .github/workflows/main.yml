@@ -28,7 +28,7 @@ jobs:
     if: contains(github.event.head_commit.message, 'deploy workflows')
     needs: get-environment
     runs-on: ubuntu-latest
-    
+
     # env:
     #   AWS_REGION: us-east-1
     #   IMAGE_REPO_NAME: bottest-ai-prod-app-ecr-repository # Replace with your ECR repository name
