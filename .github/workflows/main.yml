@@ -29,13 +29,6 @@ jobs:
     needs: get-environment
     runs-on: ubuntu-latest
 
-    # env:
-    #   AWS_REGION: us-east-1
-    #   IMAGE_REPO_NAME: bottest-ai-prod-app-ecr-repository # Replace with your ECR repository name
-    #   IMAGE_TAG: latest
-    #   AWS_ACCOUNT_ID: <your-aws-account-id> # Replace with your AWS account ID
-    #   LAMBDA_FUNCTION_NAME: bottest-function
-
     steps:
       - name: Checkout GitHub code
         uses: actions/checkout@v4
@@ -94,4 +87,4 @@ jobs:
           echo Build completed on `date`
           echo Pushing the Docker image...
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-        #   aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
